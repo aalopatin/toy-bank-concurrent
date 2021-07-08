@@ -1,7 +1,9 @@
 package ru.aal;
 
 import java.util.ArrayList;
+
 import static java.util.Arrays.asList;
+
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.*;
@@ -9,7 +11,7 @@ import java.util.concurrent.*;
 public class Main {
 
     private static final Request DUMMY = new Request("", 0, RequestType.DUMMY);
-    private static FrontEndSystem frontEndSystem= new FrontEndSystem(DUMMY);
+    private static FrontEndSystem frontEndSystem = new FrontEndSystem(DUMMY);
     private static BackEndSystem backEndSystem;
 
     public static void main(String[] args) throws InterruptedException {
@@ -41,25 +43,24 @@ public class Main {
 
     }
 
-    private static int generateBalance() throws InterruptedException {
+    private static int generateBalance() {
+
         int balance = 0;
 
         ExecutorService executorServiceGenerators = Executors.newCachedThreadPool();
-
-        Callable<Integer> balanceGenerator = new BalanceGenerator();
-        List<Future<Integer>> generators = executorServiceGenerators.invokeAll(
-                asList(balanceGenerator, balanceGenerator, balanceGenerator)
-        );
-        for (Future<Integer> futureGenerator :
-                generators) {
-            try {
+        try {
+            Callable<Integer> balanceGenerator = new BalanceGenerator();
+            List<Future<Integer>> generators = executorServiceGenerators.invokeAll(
+                    asList(balanceGenerator, balanceGenerator, balanceGenerator)
+            );
+            for (Future<Integer> futureGenerator : generators) {
                 balance += futureGenerator.get();
-            } catch (ExecutionException e) {
-                balance += 300_000;
             }
+        } catch (ExecutionException | InterruptedException e) {
+            balance += 300_000;
+        } finally {
+            executorServiceGenerators.shutdown();
         }
-
-        executorServiceGenerators.shutdown();
 
         return balance;
     }
